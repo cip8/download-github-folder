@@ -1,21 +1,30 @@
 #!/usr/bin/env bash
 
+# Import .env file variables.
+unamestr=$(uname)
+if [ "$unamestr" = 'Linux' ]; then
+  export $(grep -v '^#' .env | xargs -d '\n')
+elif [ "$unamestr" = 'FreeBSD' ] || [ "$unamestr" = 'Darwin' ]; then
+  export $(grep -v '^#' .env | xargs -0)
+fi
+
+
 if [[ $# -lt 1 ]];
 then
-	echo "Url is needed !"
+	echo "ERROR: URL required"
 	exit
 fi
 
-auth_token=""
-if [[ $# -ge 2 ]];
-then
-	auth_token=$2
-fi
+# auth_token=""
+# if [[ $# -ge 2 ]];
+# then
+# 	auth_token=$2
+# fi
 
 destination_path=""
-if [[ $# -ge 3 ]];
+if [[ $# -ge 2 ]];
 then
-	destination_path=$3
+	destination_path=$2
 fi
 
 
@@ -57,9 +66,9 @@ fi
 contents_file=$(mktemp)
 
 accept_header="Accept: application/vnd.github.v3+json"
-auth_header="Authorization: token ${auth_token}"
+auth_header="Authorization: token ${GITHUB_KEY}"
 
-if [ "${auth_token}" = "" ];
+if [ "${GITHUB_KEY}" = "" ];
 then
 	curl -s -H "${accept_header}" "${contents_url}" > ${contents_file}
 else
@@ -124,7 +133,7 @@ do
 	if [ "${download_url}" == "null" ];
 	then
 		mkdir -p "${path}"
-		$0 "${url}/${f_name}" "${auth_token}"
+		$0 "${url}/${f_name}" "${GITHUB_KEY}"
 
 		if [[ "$?" -ne 0 ]]
 		then
