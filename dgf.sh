@@ -2,12 +2,12 @@
 
 # Import .env file variables.
 unamestr=$(uname)
-if [ "$unamestr" = 'Linux' ]; then
-  export $(grep -v '^#' .env | xargs -d '\n')
-elif [ "$unamestr" = 'FreeBSD' ] || [ "$unamestr" = 'Darwin' ]; then
-  export $(grep -v '^#' .env | xargs -0)
+SCRIPT_DIR=$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)
+if [ "${unamestr}" = "Linux" ]; then
+	export $(grep -v '^#' "${SCRIPT_DIR}"/.env | xargs -d '\n')
+elif [ "${unamestr}" = "FreeBSD" ] || [ "${unamestr}" = "Darwin" ]; then
+	export $(grep -v '^#' "${SCRIPT_DIR}"/.env | xargs -0)
 fi
-
 
 if [[ $# -lt 1 ]];
 then
