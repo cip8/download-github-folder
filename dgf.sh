@@ -9,8 +9,7 @@ elif [ "${unamestr}" = "FreeBSD" ] || [ "${unamestr}" = "Darwin" ]; then
 	export $(grep -v '^#' "${SCRIPT_DIR}"/.env | xargs -0)
 fi
 
-if [[ $# -lt 1 ]];
-then
+if [[ $# -lt 1 ]]; then
 	echo "ERROR: URL required"
 	exit
 fi
@@ -22,8 +21,7 @@ fi
 # fi
 
 destination_path=""
-if [[ $# -ge 2 ]];
-then
+if [[ $# -ge 2 ]]; then
 	destination_path=$2
 fi
 
@@ -35,8 +33,7 @@ tokens_len=$((${#tokens[@]} - 1))
 owner=${tokens[2]}
 repo=${tokens[3]}
 
-if [[ $has_branch -eq 0 ]]
-then
+if [[ $has_branch -eq 0 ]]; then
 	branch=${tokens[5]}
 	dir_path=${tokens[6]}
 	dir_path_start_idx="7"
@@ -53,12 +50,10 @@ done
 # API Template "https://api.github.com/repos/${OWNER}/${REPO}/contents/${DIR_PATH}?ref=${BRANCH}"
 contents_url="https://api.github.com/repos/${owner}/${repo}/contents"
 
-if [[ "${dir_path}" != "" ]]
-then
+if [[ "${dir_path}" != "" ]]; then
 	contents_url="${contents_url}/${dir_path}"
 
-	if [[ "${branch}" != "" ]]
-	then
+	if [[ "${branch}" != "" ]]; then
 		contents_url="${contents_url}?ref=${branch}"
 	fi
 fi
@@ -68,8 +63,7 @@ contents_file=$(mktemp)
 accept_header="Accept: application/vnd.github.v3+json"
 auth_header="Authorization: token ${GITHUB_KEY}"
 
-if [ "${GITHUB_KEY}" = "" ];
-then
+if [ "${GITHUB_KEY}" = "" ]; then
 	curl -s -H "${accept_header}" "${contents_url}" > ${contents_file}
 else
 	curl -s -H "${auth_header}" -H "${accept_header}" "${contents_url}" > ${contents_file}
@@ -77,8 +71,7 @@ fi
 
 rate_exceeded=$(cat ${contents_file} | grep "API rate limit exceeded" > /dev/null; echo $?)
 
-if [[ "${rate_exceeded}" -eq 0 ]]
-then
+if [[ "${rate_exceeded}" -eq 0 ]]; then
 	echo "ERROR : API Rate limit is exceeded."
 	echo
 	echo "If you have personal access token the limit will be increased. "
@@ -115,8 +108,7 @@ for ((i = 0; i < ${n_files}; i++));
 do
 	f_name=${file_names[i]}
 	
-	if [ "${destination_path}" = "" ];
-	then
+	if [ "${destination_path}" = "" ]; then
 		path=${repo}/${paths[i]}
 	else
 		path=${destination_path}/${file_names[i]}
@@ -124,24 +116,23 @@ do
 
 	download_url=${download_urls[i]}
 
-	if [[ "${#runners[@]}" -ge 10 ]];
-	then
+	if [[ "${#runners[@]}" -ge 10 ]];	then
 		wait ${runners[@]}
 		runners=()
 	fi
 
-	if [ "${download_url}" == "null" ];
-	then
+	if [ "${download_url}" == "null" ];	then
 		mkdir -p "${path}"
-		$0 "${url}/${f_name}" "${GITHUB_KEY}"
+		echo ${path}
+		$0 "${url}/${f_name}" "${path}"
 
-		if [[ "$?" -ne 0 ]]
-		then
+		if [[ "$?" -ne 0 ]]; then
 			echo "Error"
 			exit $?
 		fi
 
 		continue;
+
 	else
 		mkdir -p $(dirname "${path}")
 		echo ${path}
